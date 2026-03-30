@@ -2,30 +2,34 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-exports.login = async (req,res)=>{
-  try{
+exports.login = async (req, res) => {
 
-    const {email,password} = req.body;
+  try {
 
-    const user = await User.findOne({email});
-    if(!user) return res.status(404).json({message:"User not found"});
+    const { email, password } = req.body;
 
-    const match = await bcrypt.compare(password,user.password);
+    const user = await User.findOne({ email });
 
-    if(!match) return res.status(400).json({message:"Invalid credentials"});
+    if (!user)
+      return res.status(404).json({ message: "User not found" });
+
+    const match = await bcrypt.compare(password, user.password);
+
+    if (!match)
+      return res.status(400).json({ message: "Invalid password" });
 
     const token = jwt.sign(
-      {id:user._id, role:user.role},
+      { id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      {expiresIn:"1d"}
+      { expiresIn: "1d" }
     );
 
     res.json({
       token,
-      role:user.role
+      role: user.role,
     });
 
-  }catch(err){
+  } catch (err) {
     res.status(500).json(err);
   }
-}
+};
